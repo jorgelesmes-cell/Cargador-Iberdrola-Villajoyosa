@@ -66,3 +66,19 @@ if libres > 0:
     print("HAY UN CARGADOR DISPONIBLE")
 else:
     print("TODOS LOS CARGADORES ESTAN OCUPADOS")
+import os
+import requests
+
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
+if libres > 0:
+    mensaje = f"⚡ ¡HAY CARGADOR LIBRE EN IBERDROLA VILLAJOYOSA! Libres: {libres}/{len(conectores)}"
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    respuesta = requests.post(
+        url,
+        data={"chat_id": CHAT_ID, "text": mensaje},
+        timeout=15
+    )
+    respuesta.raise_for_status()
+    print("Aviso enviado a Telegram correctamente.")
