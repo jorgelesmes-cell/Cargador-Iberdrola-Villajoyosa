@@ -1,12 +1,33 @@
-name : monitor cargador Iberdrola
+name: monitor cargador Iberdrola
+
 on:
-  schedule :
-    - cron: "*/5 * * * *"
+  schedule:
+    - cron: "*/15 * * * *"
   workflow_dispatch:
+
 jobs:
   monitor:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Playwright
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
       - name: Ejecutar monitor
-        run: echo "Monitor iniciado"
-        
+        run: python monitor.py
+
+      - name: Guardar captura
+        uses: actions/upload-artifact@v4
+        with:
+          name: captura-iberdrola
+          path: iberdrola.png
