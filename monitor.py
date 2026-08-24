@@ -45,3 +45,24 @@ with urllib.request.urlopen(request, timeout=30) as response:
 
     print("Respuesta recibida correctamente.")
     print("Datos guardados en iberdrola.json")
+punto = datos["entidad"][0]
+
+conectores = punto["logicalSocket"]
+
+libres = 0
+
+for conector in conectores:
+    estado = conector["status"]["statusCode"]
+    numero = conector["physicalSocket"][0]["physicalSocketCode"]
+
+    print(f"Toma {numero}: {estado}")
+
+    if estado != "OCCUPIED":
+        libres += 1
+
+print(f"Conectores libres: {libres}/{len(conectores)}")
+
+if libres > 0:
+    print("HAY UN CARGADOR DISPONIBLE")
+else:
+    print("TODOS LOS CARGADORES ESTAN OCUPADOS")
