@@ -82,3 +82,9 @@ if libres > 0:
     )
     respuesta.raise_for_status()
     print("Aviso enviado a Telegram correctamente.")
+print("PRUEBA TELEGRAM")
+requests.post(
+    f"https://api.telegram.org/bot{TOKEN}/sendMessage",
+    data={"chat_id": CHAT_ID, "text": "✅ Prueba correcta: el bot de Iberdrola puede enviarte mensajes."},
+    timeout=15
+).raise_for_status()
