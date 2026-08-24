@@ -29,5 +29,5 @@ jobs:
       - name: Guardar captura
         uses: actions/upload-artifact@v4
         with:
-          name: captura-iberdrola
-          path: iberdrola.png
+          name: datos-iberdrola
+          path: iberdrola.json
