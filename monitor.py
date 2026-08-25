@@ -1,5 +1,6 @@
 import json
 import urllib.request
+import os
 
 URL = (
     "https://www.iberdrola.es/o/webclipb/iberdrola/"
@@ -61,8 +62,18 @@ for conector in conectores:
         libres += 1
 
 print(f"Conectores libres: {libres}/{len(conectores)}")
+estado_actual = "LIBRE" if libres > 0 else "OCUPADO"
 
-if libres > 0:
+try:
+    with open("estado_anterior.txt", "r") as archivo:
+        estado_anterior = archivo.read().strip()
+except FileNotFoundError:
+    estado_anterior = ""
+
+with open("estado_anterior.txt", "w") as archivo:
+    archivo.write(estado_actual)
+
+if estado_actual == "LIBRE" and estado_anterior != "LIBRE":
     print("HAY UN CARGADOR DISPONIBLE")
 else:
     print("TODOS LOS CARGADORES ESTAN OCUPADOS")
