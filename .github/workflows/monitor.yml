@@ -22,7 +22,13 @@ jobs:
         run: |
           pip install playwright requests
           playwright install --with-deps chromium
-
+      - name: Recuperar estado anterior
+        uses: actions/cache@v4
+        with:
+          path: estado_anterior.txt
+          key: estado-cargador-${{ github.run_id }}
+          restore-keys: |
+            estado-cargador-
       - name: Ejecutar monitor
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
