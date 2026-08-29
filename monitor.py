@@ -81,15 +81,29 @@ import os
 import requests
 
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
+CHAT_IDS = [
+    os.environ.get("TELEGRAM_CHAT_ID"),
+    os.environ.get("TELEGRAM_CHAT_ID_ESPOSA"),
+]
 
 if estado_actual == "LIBRE" and estado_anterior != "LIBRE":
-    mensaje = f"⚡ ¡HAY CARGADOR LIBRE EN IBERDROLA VILLAJOYOSA! Libres: {libres}/{len(conectores)}"
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    respuesta = requests.post(
-        url,
-        data={"chat_id": CHAT_ID, "text": mensaje},
-        timeout=15
+    mensaje = (
+        "⚡ ¡HAY CARGADOR LIBRE EN IBERDROLA VILLAJOYOSA! "
+        f"Libres: {libres}/{len(conectores)}"
     )
-    respuesta.raise_for_status()
-    print("Aviso enviado a Telegram correctamente.")
+
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+
+    for chat_id in CHAT_IDS:
+        if not chat_id:
+            continue
+
+        respuesta = requests.post(
+            url,
+            data={"chat_id": chat_id, "text": mensaje},
+            timeout=15,
+        )
+        respuesta.raise_for_status()
+
+    print("Avisos enviados a Telegram correctamente.")
