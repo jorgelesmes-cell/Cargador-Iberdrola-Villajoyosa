@@ -1,8 +1,6 @@
 name: monitor cargador Iberdrola
 
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -18,10 +16,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Instalar Playwright
-        run: |
-          pip install playwright requests
-          playwright install --with-deps chromium
+      - name: Instalar dependencias
+        run: pip install requests
+
       - name: Recuperar estado anterior
         uses: actions/cache@v4
         with:
@@ -29,6 +26,7 @@ jobs:
           key: estado-cargador-${{ github.run_id }}
           restore-keys: |
             estado-cargador-
+
       - name: Ejecutar monitor
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -36,7 +34,7 @@ jobs:
           TELEGRAM_CHAT_ID_ESPOSA: ${{ secrets.TELEGRAM_CHAT_ID_ESPOSA }}
         run: python monitor.py
 
-      - name: Guardar captura
+      - name: Guardar datos de Iberdrola
         uses: actions/upload-artifact@v4
         with:
           name: datos-iberdrola
