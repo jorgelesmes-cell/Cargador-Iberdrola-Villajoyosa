@@ -1,0 +1,57 @@
+name: Diagnóstico de Iberdrola con Chromium
+on:
+  push:
+    branches: [diagnostico-iberdrola-chromium]
+permissions:
+  contents: read
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar Chromium
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Consultar ambos cargadores
+        run: |
+          python -u - <<'PY'
+          from playwright.sync_api import sync_playwright
+
+          mapa = 'https://www.iberdrola.es/movilidad-electrica/productos/puntos-de-recarga'
+          ruta = '/o/webclipb/iberdrola/puntosrecargacontroller/getDatosPuntoRecarga'
+          resultados = []
+          with sync_playwright() as p:
+              navegador = p.chromium.launch()
+              pagina = navegador.new_page(locale='es-ES')
+              respuesta = pagina.goto(mapa, wait_until='domcontentloaded', timeout=45000)
+              print(f'Mapa: HTTP {respuesta.status}')
+              if not respuesta.ok:
+                  raise SystemExit('El mapa no está accesible desde GitHub.')
+              pagina.locator('#ship-address').wait_for(state='attached', timeout=30000)
+              for punto in (5519, 15502):
+                  resultado = pagina.evaluate('''async ({ruta, punto}) => {
+                      const respuesta = await fetch(ruta, {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json; charset=UTF-8',
+                              'Accept': 'application/json, text/javascript, */*; q=0.01',
+                              'X-Requested-With': 'XMLHttpRequest'
+                          },
+                          body: JSON.stringify({dto: {cuprId: [punto]}, language: 'es'}),
+                          signal: AbortSignal.timeout(20000)
+                      });
+                      if (!respuesta.ok) return {http: respuesta.status};
+                      const datos = await respuesta.json();
+                      const tomas = datos.entidad?.[0]?.logicalSocket;
+                      return {http: respuesta.status, estados: Array.isArray(tomas)
+                          ? tomas.map(toma => toma.status?.statusCode) : []};
+                  }''', {'ruta': ruta, 'punto': punto})
+                  print(f'Cargador {punto}: {resultado}')
+                  resultados.append(resultado.get('http') == 200 and bool(resultado.get('estados')))
+          if not all(resultados):
+              raise SystemExit('Chromium no recibió los estados de ambos cargadores.')
+          PY
